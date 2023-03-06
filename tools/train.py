@@ -90,6 +90,7 @@ def parse_args():
         '--auto-scale-lr',
         action='store_true',
         help='enable automatically scaling LR.')
+    parser.add_argument('--torchcompile', action='store_true', help='use compile train')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -101,7 +102,7 @@ def parse_args():
     if args.options:
         warnings.warn('--options is deprecated in favor of --cfg-options')
         args.cfg_options = args.options
-
+   
     return args
 
 
@@ -233,6 +234,10 @@ def main():
             CLASSES=datasets[0].CLASSES)
     # add an attribute for visualization convenience
     model.CLASSES = datasets[0].CLASSES
+
+    if args.torchcompile:
+        model=torch.compile(model)
+        
     train_detector(
         model,
         datasets,
